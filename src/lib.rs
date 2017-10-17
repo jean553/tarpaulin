@@ -12,6 +12,8 @@ extern crate clap;
 extern crate serde;
 extern crate serde_json;
 extern crate quick_xml;
+#[macro_use]
+extern crate horrorshow;
 
 use std::env;
 use std::io;
@@ -263,6 +265,9 @@ pub fn report_coverage(config: &Config, result: &[TracerData]) {
                 &OutputFile::Xml => {
                     report::cobertura::export(result, config);
                 },
+                &OutputFile::Html => {
+                    report::html_report::export(result, config);
+                },
                 _ => {
                     println!("Format currently unsupported");
                 },
@@ -461,8 +466,9 @@ fn execute_test(test: &Path, package: &Package, ignored: bool, config: &Config) 
         Err(e) => println!("ASLR disable failed: {}", e),
     }
     request_trace().expect("Failed to trace");
-    println!("running {}", test.display());
-    println!("Working dir {}", package.manifest_path().display());
+    if config.verbose {
+        println!("running {}", test.display());
+    }
     if let Some(parent) = package.manifest_path().parent() {
         let _ = env::set_current_dir(parent);
     }
